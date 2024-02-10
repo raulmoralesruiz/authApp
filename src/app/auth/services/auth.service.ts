@@ -38,14 +38,27 @@ export class AuthService {
     return this.http.post<LoginResponse>(url, body).pipe(
       map( ({user, token}) => this.setAuthentication(user, token) ),
       catchError( err => throwError( () => err.error.message) )
-    );
+      );
+    }
+
+    logout() {
+      // limpieza y procedimiento
+      // resivar servicio, mirar señales q hay q cambiar
+      // ver qué debemos eliminar
+      // eliminar JWT, localstorage
+      this._currentUser.set(null);
+      this._authStatus.set(AuthStatus.notAuthenticated);
+      localStorage.removeItem('token');
   }
 
   checkAuthStatus(): Observable<boolean> {
     const url = `${this.baseUrl}/auth/check-token`;
     const token = localStorage.getItem('token');
 
-    if ( !token ) return of(false);
+    if ( !token ) {
+      this.logout();
+      return of(false);
+    }
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
